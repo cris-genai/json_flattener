@@ -195,11 +195,16 @@ def create_download_files(flattened_data: Dict[str, Any], filename_base: str):
     # CSV content  
     csv_content = df.to_csv(index=False)
     
-    # Excel content
-    excel_buffer = io.BytesIO()
-    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-        df.to_excel(writer, sheet_name='Flattened_Data', index=False)
-    excel_content = excel_buffer.getvalue()
+    # Excel content - with error handling
+    excel_content = None
+    try:
+        excel_buffer = io.BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Flattened_Data', index=False)
+        excel_content = excel_buffer.getvalue()
+    except ImportError:
+        # If openpyxl is not available, create a simple Excel-compatible CSV
+        excel_content = csv_content.encode('utf-8')
     
     # JSON content (flattened)
     json_content = json.dumps({
@@ -220,6 +225,14 @@ def main():
     # Title and description
     st.title("📊 JSON Flattener")
     st.markdown("Convert nested JSON data (including arrays and objects) into flat spreadsheet format")
+    
+    # Check for missing dependencies
+    try:
+        import openpyxl
+        excel_available = True
+    except ImportError:
+        excel_available = False
+        st.warning("⚠️ Excel export requires openpyxl. Add 'openpyxl>=3.1.0' to requirements.txt for full functionality. TSV and CSV work perfectly!")
     
     # Sidebar
     with st.sidebar:
@@ -349,37 +362,7 @@ def main():
                         
                         st.write("")
                         
-                        # # Table Copy Button
-                        # st.write("**📊 Formatted Table:**")
-                        # table_text = files['dataframe'].to_string(index=False, max_colwidth=60)
-                        # table_component = create_clipboard_component(
-                        #     table_text,
-                        #     "📊 Copy Table",
-                        #     "Table copied to clipboard!"
-                        # )
-                        # components.html(table_component, height=70)
-                    
-                    # with col2:
-                    #     # CSV Copy Button
-                    #     st.write("**📄 CSV Format:**")
-                    #     csv_component = create_clipboard_component(
-                    #         files['csv'],
-                    #         "📄 Copy CSV",
-                    #         "CSV copied to clipboard!"
-                    #     )
-                    #     components.html(csv_component, height=70)
                         
-                    #     st.write("")
-                        
-                    #     # JSON Copy Button
-                    #     st.write("**🔧 Flattened JSON:**")
-                    #     json_component = create_clipboard_component(
-                    #         files['json'],
-                    #         "🔧 Copy JSON",
-                    #         "JSON copied to clipboard!"
-                    #     )
-                    #     components.html(json_component, height=70)
-                    
                     st.write("---")  # Divider
                     
                     # Preview section
@@ -408,12 +391,30 @@ def main():
                         )
                     
                     with col3:
-                        st.download_button(
-                            label="📊 Download Excel",
-                            data=files['excel'],
-                            file_name=f"{base_filename}_flattened.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
+                        try:
+                            if files['excel']:
+                                st.download_button(
+                                    label="📊 Download Excel",
+                                    data=files['excel'],
+                                    file_name=f"{base_filename}_flattened.xlsx",
+                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                )
+                            else:
+                                st.download_button(
+                                    label="📊 Download CSV (Excel)",
+                                    data=files['csv'],
+                                    file_name=f"{base_filename}_flattened.csv",
+                                    mime="text/csv",
+                                    help="Excel format not available - downloading as CSV"
+                                )
+                        except:
+                            st.download_button(
+                                label="📊 Download CSV (Excel)",
+                                data=files['csv'],
+                                file_name=f"{base_filename}_flattened.csv",
+                                mime="text/csv",
+                                help="Excel format not available - downloading as CSV"
+                            )
                     
                     with col4:
                         st.download_button(
@@ -557,29 +558,6 @@ def main():
                             )
                             components.html(tsv_component, height=70)
                             
-                            # table_text = files['dataframe'].to_string(index=False, max_colwidth=50)
-                            # table_component = create_clipboard_component(
-                            #     table_text,
-                            #     "📊 Copy Table", 
-                            #     "Table copied!"
-                            # )
-                            # components.html(table_component, height=70)
-                        
-                        # with col2:
-                        #     csv_component = create_clipboard_component(
-                        #         files['csv'],
-                        #         "📄 Copy CSV",
-                        #         "CSV copied!"
-                        #     )
-                        #     components.html(csv_component, height=70)
-                            
-                        #     json_component = create_clipboard_component(
-                        #         files['json'],
-                        #         "🔧 Copy JSON",
-                        #         "JSON copied!"
-                        #     )
-                        #     components.html(json_component, height=70)
-                        
                         # Download options
                         st.write("**💾 Download Options:**")
                         col1, col2, col3 = st.columns(3)
@@ -599,11 +577,27 @@ def main():
                             )
                         
                         with col3:
-                            st.download_button(
-                                label="📊 Excel",
-                                data=files['excel'],
-                                file_name="pasted_json_flattened.xlsx"
-                            )
+                            try:
+                                if files['excel'] and len(files['excel']) > len(files['csv']):
+                                    st.download_button(
+                                        label="📊 Excel",
+                                        data=files['excel'],
+                                        file_name="pasted_json_flattened.xlsx"
+                                    )
+                                else:
+                                    st.download_button(
+                                        label="📊 CSV (Excel)",
+                                        data=files['csv'],
+                                        file_name="pasted_json_flattened.csv",
+                                        help="Excel format not available - downloading as CSV"
+                                    )
+                            except:
+                                st.download_button(
+                                    label="📊 CSV (Excel)",
+                                    data=files['csv'],
+                                    file_name="pasted_json_flattened.csv",
+                                    help="Excel format not available"
+                                )
                             
             except json.JSONDecodeError as e:
                 st.error(f"❌ Invalid JSON: {e}")
