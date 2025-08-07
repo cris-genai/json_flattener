@@ -5,6 +5,7 @@ import io
 from typing import Any, Dict, Union
 import zipfile
 from datetime import datetime
+import re
 import streamlit.components.v1 as components
 
 # Set page config
@@ -183,9 +184,9 @@ def analyze_json_structure(json_data: Union[str, Dict]) -> Dict[str, Any]:
 def create_download_files(flattened_data: Dict[str, Any], filename_base: str):
     """Create downloadable files in different formats."""
     
-    # Create DataFrame
+    # Create DataFrame with proper value formatting
     df = pd.DataFrame([
-        {'Field': format_field_name(field), 'Value': str(value) if value is not None else 'null'}
+        {'Field': format_field_name(field), 'Value': f'{value}' if value is not None else 'N/A'}
         for field, value in flattened_data.items()
     ])
     
