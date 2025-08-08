@@ -416,7 +416,7 @@ def main():
     """Main Streamlit app."""
     
     # Title and description
-    st.title("📊 JSON Flattener")
+    st.title("📊 GIS JSON Flattener")
     st.markdown("Convert nested JSON data (including arrays and objects) into flat spreadsheet format")
     
     # Check for missing dependencies
@@ -655,47 +655,14 @@ def main():
                         st.write("**📝 TSV Format (Perfect for Excel):**")
                         tsv_component = create_clipboard_component(
                             active_tsv, 
-                            "📝 Copy TSV", 
-                            f"{format_desc} TSV copied to clipboard!"
+                            "📝 Copy", 
+                            f"{format_desc} Copied to clipboard!"
                         )
                         components.html(tsv_component, height=70)
                         
                         st.write("")
                         
-                        # Table Copy Button
-                        st.write("**📊 Formatted Table:**")
-                        table_text = active_df.to_string(index=False, max_colwidth=60)
-                        table_component = create_clipboard_component(
-                            table_text,
-                            "📊 Copy Table",
-                            f"{format_desc} table copied to clipboard!"
-                        )
-                        components.html(table_component, height=70)
-                    
-                    with col2:
-                        # CSV Copy Button
-                        st.write("**📄 CSV Format:**")
-                        csv_component = create_clipboard_component(
-                            active_csv,
-                            "📄 Copy CSV",
-                            f"{format_desc} CSV copied to clipboard!"
-                        )
-                        components.html(csv_component, height=70)
-                        
-                        st.write("")
-                        
-                        # JSON Copy Button (only for standard format)
-                        if format_desc == "Standard" or format_desc == "Standard (Fallback)":
-                            st.write("**🔧 Flattened JSON:**")
-                            json_component = create_clipboard_component(
-                                files['json'],
-                                "🔧 Copy JSON",
-                                "JSON copied to clipboard!"
-                            )
-                            components.html(json_component, height=70)
-                        else:
-                            st.write("**🏢 SEC GIS Benefits:**")
-                            st.success("✓ Philippine SEC compliant field names")
+
                     
                     st.write("---")  # Divider
                     
@@ -929,36 +896,12 @@ def main():
                         with col1:
                             tsv_component = create_clipboard_component(
                                 active_tsv,
-                                "📝 Copy TSV",
-                                f"{format_name} TSV copied!"
+                                "📝 Copy",
+                                f"{format_name} Copied!"
                             )
                             components.html(tsv_component, height=70)
                             
-                            table_text = active_df.to_string(index=False, max_colwidth=50)
-                            table_component = create_clipboard_component(
-                                table_text,
-                                "📊 Copy Table", 
-                                f"{format_name} table copied!"
-                            )
-                            components.html(table_component, height=70)
-                        
-                        with col2:
-                            csv_component = create_clipboard_component(
-                                active_csv,
-                                "📄 Copy CSV",
-                                f"{format_name} CSV copied!"
-                            )
-                            components.html(csv_component, height=70)
                             
-                            if format_name == "Standard":
-                                json_component = create_clipboard_component(
-                                    files['json'],
-                                    "🔧 Copy JSON",
-                                    "JSON copied!"
-                                )
-                                components.html(json_component, height=70)
-                            else:
-                                st.info("🏢 SEC GIS format for Philippine compliance")
                         
                         # Download options
                         st.write(f"**💾 Download Options ({format_name}):**")
