@@ -194,7 +194,7 @@ def map_sec_gis_fields(json_data: Union[str, Dict]) -> Dict[str, Any]:
     field_mapping = {
         "Document Type": data.get("document_type", ""),
         "For the year": data.get("for_the_year", ""),
-        "Corporate Name": data.get("corporate_name", ""),
+        "Corporate Name": data.get("business_trade_name", ""),
         "Business/Trade Name": data.get("business_trade_name", ""),
         "Date Registered": data.get("date_registered", ""),
         "Fiscal Year End": data.get("fiscal_year_end", ""),
@@ -228,7 +228,8 @@ def map_sec_gis_fields(json_data: Union[str, Dict]) -> Dict[str, Any]:
         "AMLA Category 7": data.get("amla_category_7", ""),
         "AMLA Category 8": data.get("amla_category_8", ""),
         "AMLA Compliance Status": data.get("amla_compliance_status", ""),
-        "Corporate Name": data.get("corporate_name", ""),
+        "Corporate Name (2)": data.get("business_trade_name", ""),
+        "Corporate Name (3)": data.get("business_trade_name", ""),
         "Auth Capital Stock - Type of Shares 1": data.get("auth_capital_stock_type_of_shares_1", ""),
         "Auth Capital Stock - Number of Shares 1": data.get("auth_capital_stock_number_of_shares_1", ""),
         "Auth Capital Stock - Par / Stated Value 1": data.get("auth_capital_stock_par_stated_value_1", ""),
@@ -253,6 +254,9 @@ def map_sec_gis_fields(json_data: Union[str, Dict]) -> Dict[str, Any]:
         "Foreign Paid-Up Capital - Amount (PhP) 1": data.get("foreign_paid_up_capital_amount_php_1", ""),
         "Paid-up Capital_% Foreigh Equity": data.get("paid_up_capital_foreign_equity_percentage", ""),
         "Paid-Up Capital_Total": data.get("paid_up_capital_total", ""),
+        "Corporate Name (4)": data.get("business_trade_name", ""),
+        "Corporate Name (5)": data.get("business_trade_name", ""),
+        "Corporate Name (6)": data.get("business_trade_name", ""),
     }
     
     # Add Directors/Officers - up to 20 entries as per Pydantic model
@@ -290,6 +294,8 @@ def map_sec_gis_fields(json_data: Union[str, Dict]) -> Dict[str, Any]:
     field_mapping.update({
         "Subscribed Capital_Total (PHP) (from Stockholder detail pages)": data.get("subscribed_capital_total_from_stockholders", ""),
         "Paid-Up Capital_Total (PHP) (from Stockholder detail pages)": data.get("paid_up_capital_total_from_stockholders", ""),
+        "Subscribed Capital_Total (PHP) (from Stockholder detail pages)": data.get("filipino_subscribed_capital_amount_php_1", ""),
+        "Paid-Up Capital_Total (PHP) (from Stockholder detail pages)": data.get("filipino_paid_up_capital_amount_php_1", ""),
         "Unrestricted Retained Earnings (PHP)": data.get("unrestricted_retained_earnings", ""),
         "Prior year Dividends_Cash (PHP)": data.get("prior_year_dividends_cash", ""),
         "Prior year Dividends_Stock (PHP)": data.get("prior_year_dividends_stock", ""),
@@ -339,8 +345,8 @@ def normalize_value(value: Any) -> str:
     str_value = str(value).strip()
     
     # Handle various null representations
-    if str_value.lower() in ['null', 'n/a', 'na', 'none', '']:
-        return ""
+    # if str_value.lower() in ['null', 'n/a', 'na', 'none', '']:
+    #     return ""
     
     return str_value
 
@@ -457,8 +463,38 @@ def compare_with_ground_truth(flattened_data: Dict[str, Any], ground_truth_df: p
             'AMLA Category 8': 'amla_category_8',
             'AMLA Compliance Status': 'amla_compliance_status',
             
-            # Capital structure (simplified mappings)
+            # Capital structure (specific mappings)
+            'Auth Capital Stock - Type of Shares 1': 'auth_capital_stock_type_of_shares_1',
+            'Auth Capital Stock - Number of Shares 1': 'auth_capital_stock_number_of_shares_1',
+            'Auth Capital Stock - Par / Stated Value 1': 'auth_capital_stock_par_stated_value_1',
+            'Auth Capital Stock - Amount (PhP) 1': 'auth_capital_stock_amount_php_1',
             'Authorized Capital Stock': 'auth_capital_stock_amount_php_1',
+            
+            # Filipino Subscribed Capital
+            'Filipino Subscribed Capital - Type of Shares 1': 'filipino_subscribed_capital_type_of_shares_1',
+            'Filipino Subscribed Capital - Number of Shares 1': 'filipino_subscribed_capital_number_of_shares_1',
+            'Filipino Subscribed Capital - Par / Stated Value 1': 'filipino_subscribed_capital_par_stated_value_1',
+            'Filipino Subscribed Capital - Amount (PhP) 1': 'filipino_subscribed_capital_amount_php_1',
+            
+            # Foreign Subscribed Capital
+            'Foreign Subscribed Capital - Type of Shares 1': 'foreign_subscribed_capital_type_of_shares_1',
+            'Foreign Subscribed Capital - Number of Shares 1': 'foreign_subscribed_capital_number_of_shares_1',
+            'Foreign Subscribed Capital - Par / Stated Value 1': 'foreign_subscribed_capital_par_stated_value_1',
+            'Foreign Subscribed Capital - Amount (PhP) 1': 'foreign_subscribed_capital_amount_php_1',
+            
+            # Filipino Paid-Up Capital
+            'Filipino Paid-Up Capital - Type of Shares 1': 'filipino_paid_up_capital_type_of_shares_1',
+            'Filipino Paid-up Capital Number of Shares 1': 'filipino_paid_up_capital_number_of_shares_1',
+            'Filipino Paid-Up Capital - Par / Stated Value 1': 'filipino_paid_up_capital_par_stated_value_1',
+            'Filipino Paid-Up Capital - Amount (PhP) 1': 'filipino_paid_up_capital_amount_php_1',
+            
+            # Foreign Paid-Up Capital
+            'Foreign Paid-Up Capital - Type of Shares 1': 'foreign_paid_up_capital_type_of_shares_1',
+            'Foreign Paid-up Capital Number of Shares 1': 'foreign_paid_up_capital_number_of_shares_1',
+            'Foreign Paid-Up Capital - Par / Stated Value 1': 'foreign_paid_up_capital_par_stated_value_1',
+            'Foreign Paid-Up Capital - Amount (PhP) 1': 'foreign_paid_up_capital_amount_php_1',
+            
+            # Legacy mappings for backward compatibility
             'Subscribed Capital_Filipino': 'filipino_subscribed_capital_amount_php_1',
             'Subscribed Capital_Foreign': 'foreign_subscribed_capital_amount_php_1',
             'Subscribed Capital_% Foreigh Equity': 'subscribed_capital_foreign_equity_percentage',
@@ -466,6 +502,7 @@ def compare_with_ground_truth(flattened_data: Dict[str, Any], ground_truth_df: p
             'Paid-up Capital_Filipino': 'filipino_paid_up_capital_amount_php_1',
             'Paid-up Capital_Foreign': 'foreign_paid_up_capital_amount_php_1',
             'Paid-up Capital_% Foreigh Equity': 'paid_up_capital_foreign_equity_percentage',
+            'Paid-up Capital_% Foreign Equity': 'paid_up_capital_foreign_equity_percentage',
             'Paid-Up Capital_Total': 'filipino_paid_up_capital_amount_php_1',  # Map to existing field
             
             # Director/Officer fields
