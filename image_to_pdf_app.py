@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 import io
-from fpdf2 import FPDF
+from fpdf import FPDF
 import tempfile
 import os
 
